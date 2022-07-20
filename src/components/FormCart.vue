@@ -25,7 +25,7 @@
                 <div class="form-group">
                     <div class="justify-content-between d-flex">
                         <h1 class="text-start fw-bold">{{form.name}}</h1>
-                        <p>Создано: {{form.date.split("T")[0]}}</p>
+                        <p>Создано: {{this.date}}</p>
                     </div>
 
                     <p class="text-start">{{form.description}}</p>
@@ -41,13 +41,15 @@
 
                 <p class="text-start mb-3">{{question.description}}</p>
 
-                <input type="text" class="form-control" v-if="question.type == 1" disabled :value="this.answer[0][index].input">
+                <div v-for="(answer, idx) of answers" :key="answer">
+                    <input type="text" class="form-control" v-if="question.type == 1 && idx == this.counter - 1" :value="answer.answer[index].input" disabled>
 
-                <textarea class="form-control mt-3" v-if="question.type == 2" disabled :value="this.answer[0][index].input"></textarea>
+                    <textarea class="form-control mt-3" v-if="question.type == 2 && idx == this.counter - 1" :value="answer.answer[index].input" disabled></textarea>
 
-                <select class="form-select mt-3" v-if="question.type == 3" disabled >
-                    <option selected >{{this.answer[0][index].input}}</option>
-                </select>
+                    <select class="form-select mt-3" v-if="question.type == 3 && idx == this.counter - 1" disabled >
+                        <option selected >{{answer.answer[index].input}}</option>
+                    </select>
+                </div>
 
             </div>
         </div>
@@ -69,41 +71,26 @@
                 answers: [],
                 errors: [],
                 counter: '1',
-                answer: []
+                date: ''
             }
         },
         methods: {
             plus () {
                 if(this.counter < this.answers.length) {
                     this.counter ++
-                    this.answer.splice(0,1, this.answers[this.counter - 1].answer)
                 }
             },
             minus () {
                 if(this.counter > 1 ) {
                     this.counter --
-                    this.answer.splice(0,1, this.answers[this.counter - 1].answer)
                 }
             }
 
         },
         async created() {
-            await apiClass.request('getById', {id: window.location.href.split('/').pop(), form: this.form})
-                .then((response) => this.form = response)
-
-            await apiClass.request('getByFormId', {id: this.form._id, answer: this.answer})
-                .then(response => {
-                    this.answers = response
-                })
-            if (this.answers.length == 0) {
-                let data = []
-                for (var i = 0; i < this.form.questions.length; i++) {
-                    data.push({input: ''})
-                }
-                this.answer.splice(0,1, data)
-            } else {
-                this.answer.splice(0,1, this.answers[this.counter - 1].answer)
-            }
+            this.form = await apiClass.request('getById', {id: window.location.href.split('/').pop(), form: this.form})
+            this.date = this.form.date.split("T")[0]
+            this.answers = await apiClass.request('getByFormId', {id: this.form._id, answer: this.answer})
         }
     }
 </script>
