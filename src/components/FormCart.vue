@@ -94,8 +94,17 @@
             await apiClass.request('getByFormId', {id: this.form._id, answer: this.answer})
                 .then(response => {
                     this.answers = response
-                    this.answer.splice(0,1, this.answers[this.counter - 1].answer)
                 })
+            if (this.answers.length == 0) {
+                let data = []
+                for (var i = 0; i < this.form.questions.length; i++) {
+                    data.push({input: ''})
+                }
+                console.log(data)
+                this.answer.splice(0,1, data)
+            } else {
+                this.answer.splice(0,1, this.answers[this.counter - 1].answer)
+            }
         }
     }
 </script>
